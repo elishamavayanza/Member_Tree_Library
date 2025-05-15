@@ -14,6 +14,13 @@ import java.util.Map;
 
 import java.util.Stack;
 
+/**
+ * Constructeur de la vue.
+ * Initialise le contrôleur et le fond selon le mode sombre.
+ * Ajoute un écouteur de souris qui détecte les double-clics sur un membre :
+ * Si les enfants du membre sont vides, il les charge depuis le contrôleur.
+ * Puis il met à jour la racine de l’arbre pour naviguer vers ce membre.
+ */
 public class MemberTreeView extends JPanel {
     private final MemberController controller;
     private Member rootMember;
@@ -26,6 +33,12 @@ public class MemberTreeView extends JPanel {
 
     private final Stack<Member> navigationStack = new Stack<>();
 
+    /**
+     * Change le membre racine de l’arbre affiché.
+     * Si trackHistory est vrai, ajoute le membre courant à une pile de navigation pour permettre un retour arrière.
+     * Puis, définit la nouvelle racine et redessine la vue.
+     * @param controller
+     */
     public MemberTreeView(MemberController controller) {
         this.controller = controller;
         setBackground(darkMode ? new Color(10, 10, 25) : Color.WHITE);
@@ -60,6 +73,11 @@ public class MemberTreeView extends JPanel {
 
     }
 
+    /**
+     * Surcharge pratique qui appelle la précédente avec trackHistory = true
+     * @param rootMember
+     * @param trackHistory
+     */
     public void setRootMember(Member rootMember, boolean trackHistory) {
         if (trackHistory && this.rootMember != null) {
             navigationStack.push(this.rootMember); // Sauvegarde le membre courant
@@ -73,8 +91,16 @@ public class MemberTreeView extends JPanel {
         setRootMember(rootMember, true);
     }
 
-
-
+    /**
+     * Méthode principale de dessin de l’arbre.
+     * Efface le dessin précédent et, si la racine existe :
+     * Vide les coordonnées enregistrées,
+     * Active le rendu antialiasé,
+     * Appelle la méthode récursive drawMemberTree pour dessiner tout l’arbre,
+     * Met à jour dynamiquement la taille préférée du panneau (setPreferredSize),
+     * Appelle revalidate() pour forcer la mise à jour des barres de défilement si le panneau est dans un JScrollPane.
+     * @param g the <code>Graphics</code> object to protect
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -94,6 +120,13 @@ public class MemberTreeView extends JPanel {
         }
     }
 
+    /**
+     * Calcule récursivement la largeur nécessaire pour dessiner tous les descendants du member.
+     * Retourne un total basé sur la largeur cumulée des sous-arbres des enfants.
+     * @param member
+     * @param offsetX
+     * @return
+     */
     private int getSubtreeWidth(Member member, int offsetX) {
         if (member.getChildren().isEmpty()) return offsetX;
         int totalWidth = 0;
@@ -103,6 +136,21 @@ public class MemberTreeView extends JPanel {
         return totalWidth;
     }
 
+    /**
+     * Méthode récursive pour dessiner un membre et tous ses enfants.
+     * Calcule les dimensions du bloc de texte, dessine un rectangle avec bords arrondis.
+     * Centre le nom du membre à l’intérieur.
+     * Enregistre la zone cliquable pour détecter les clics.
+     * Si le membre a des enfants :
+     * Calcule la largeur de sous-arbre et leur position horizontale.
+     * Appelle drawConnection pour dessiner une ligne entre parent et enfant.
+     * Récursivement dessine chaque enfant.
+     * @param g
+     * @param member
+     * @param x
+     * @param y
+     * @param offsetX
+     */
     private void drawMemberTree(Graphics2D g, Member member, int x, int y, int offsetX) {
         g.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         FontMetrics fm = g.getFontMetrics();
@@ -153,7 +201,15 @@ public class MemberTreeView extends JPanel {
         }
     }
 
-
+    /**
+     * Dessine une courbe de Bézier entre un parent et un enfant.
+     * Crée un lien visuel doux entre les nœuds en courbe, avec des couleurs adaptables au thème sombre.
+     * @param g
+     * @param parentX
+     * @param parentY
+     * @param childX
+     * @param childY
+     */
     private void drawConnection(Graphics2D g, int parentX, int parentY, int childX, int childY) {
         Color connectionColor = darkMode ? Color.WHITE : Color.DARK_GRAY;
         g.setColor(connectionColor);
@@ -168,7 +224,11 @@ public class MemberTreeView extends JPanel {
         g.draw(curve);
     }
 
-
+    /**
+     * Revenir à l’état précédent de navigation.
+     *
+     * Retire le dernier membre de la pile et le définit comme racine, sans re-remplir la pile.
+     */
     public void goBack() {
         if (!navigationStack.isEmpty()) {
             Member previous = navigationStack.pop();
@@ -176,7 +236,12 @@ public class MemberTreeView extends JPanel {
         }
     }
 
-
+    /**
+     * Active ou désactive le mode sombre.
+     *
+     * Change la couleur de fond et redessine la vue.
+     * @param darkMode
+     */
     public void setDarkMode(boolean darkMode) {
         this.darkMode = darkMode;
         setBackground(darkMode ? new Color(10, 10, 25) : Color.WHITE);

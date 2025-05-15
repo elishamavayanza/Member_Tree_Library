@@ -25,6 +25,12 @@ public class MemberView extends JFrame {
     // Stocker la racine initiale pour pouvoir y revenir
     private final Member initialRoot;
 
+    /**
+     * Constructeur de la fenêtre principale de l'application.
+     * Initialise l'arbre des membres, les icônes, le thème, les listeners, et la barre de défilement.
+     *
+     * @param controller Le contrôleur chargé de la logique métier.
+     */
     public MemberView(MemberController controller) {
         this.controller = controller;
         this.treeView = new MemberTreeView(controller);
@@ -84,10 +90,22 @@ public class MemberView extends JFrame {
         updateTheme();
     }
 
+    /**
+     * Retourne la vue graphique de l’arbre des membres.
+     *
+     * @return l'objet MemberTreeView affichant l’arborescence.
+     */
     public MemberTreeView getTreeView() {
         return treeView;
     }
 
+    /**
+     * Met à jour le thème (sombre ou clair) de l’interface :
+     * - Change le Look & Feel (FlatLaf)
+     * - Met à jour tous les composants Swing
+     * - Applique le thème au MemberTreeView
+     * - Met à jour l’icône du bouton de bascule
+     */
     private void updateTheme() {
         try {
             if (darkMode) {
@@ -111,7 +129,11 @@ public class MemberView extends JFrame {
         }
     }
 
-
+    /**
+     * Met à jour l’icône du bouton de bascule de thème selon l’état actuel :
+     * - `selected` indique le mode activé
+     * - L’icône s’adapte à l’état `darkMode`
+     */
     private void updateToggleIcon() {
         if (toggleThemeButton.isSelected()) {
             // Montrer l'icône du thème opposé à celui en cours
