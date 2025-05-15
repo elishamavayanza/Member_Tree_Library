@@ -11,9 +11,23 @@ public class MemberController {
     private final List<Member> members;
     private final Map<String, List<Member>> memberMap; // Mappe l'ID d'un membre à ses enfants
 
+    // La racine de l'arbre (membre initial)
+    private final Member initialRoot;
+
     public MemberController() {
         members = new ArrayList<>();
         memberMap = new HashMap<>();
+
+        // Initialiser la racine ici
+        initialRoot = new Member("Racine");
+
+        // Optionnel : Ajouter la racine dans la liste des membres (si tu veux)
+        members.add(initialRoot);
+    }
+
+    // Méthode pour récupérer la racine de l'arbre
+    public Member getRootMember() {
+        return initialRoot;
     }
 
     // Créer un membre et l'ajouter à son parent (ou à la liste principale)

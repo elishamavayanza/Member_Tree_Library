@@ -5,18 +5,30 @@ import java.util.List;
 import java.util.UUID;
 
 public class Member {
-    private String id; // Identifiant unique
+    private String id; // UUID
     private String name;
     private List<Member> children;
 
     public Member(String name) {
-        this.id = UUID.randomUUID().toString(); // Générer un identifiant unique pour chaque membre
+        this.id = UUID.randomUUID().toString(); // Générer un UUID par défaut
+        this.name = name;
+        this.children = new ArrayList<>();
+    }
+
+    // Nouveau constructeur pour charger avec un id donné (ex : depuis la BDD)
+    public Member(String id, String name) {
+        this.id = id;
         this.name = name;
         this.children = new ArrayList<>();
     }
 
     public String getId() {
         return id;
+    }
+
+    // Setter ajouté pour id (utile pour mapResultSetToMember)
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -32,6 +44,6 @@ public class Member {
             children.add(child);
             return true;
         }
-        return false; // Ne peut pas avoir plus de 3 enfants
+        return false; // max 3 enfants
     }
 }
