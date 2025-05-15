@@ -40,10 +40,12 @@ public class Member {
     }
 
     public boolean addChild(Member child) {
-        if (children.size() < 3) {
-            children.add(child);
-            return true;
-        }
-        return false; // max 3 enfants
+        children.add(child);
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
