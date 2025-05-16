@@ -1,3 +1,4 @@
+// src/main/java/com/arbre/view/MemberTreeView.java
 package com.arbre.view;
 
 import com.arbre.calculator.MemberTreeCalculator;
@@ -14,7 +15,8 @@ import java.util.Stack;
 
 /**
  * Classe responsable du dessin de l'arbre des membres.
- * Délègue les calculs de layout à MemberTreeCalculator.
+ * Gère les interactions : hover pour info, clic simple pour sélection,
+ * et double-clic pour navigation dans l'arborescence.
  */
 public class MemberTreeView extends JPanel {
     private final MemberController controller;
@@ -28,30 +30,59 @@ public class MemberTreeView extends JPanel {
     private final Stack<Member> navigationStack = new Stack<>();
     private final MemberTreeCalculator calculator = new MemberTreeCalculator();
 
+    // Pour la sélection et l'affichage d'info
+    private Member hoveredMember = null;
+    private Member selectedMember = null;
+
     public MemberTreeView(MemberController controller) {
         this.controller = controller;
         setBackground(darkMode ? new Color(10, 10, 25) : Color.WHITE);
-        addMouseListener(new MouseAdapter() {
+        ToolTipManager.sharedInstance().registerComponent(this);
+
+        MouseAdapter mouseHandler = new MouseAdapter() {
             private long lastClickTime;
             @Override
+            public void mouseMoved(MouseEvent e) {
+                Member m = findMemberAt(e.getPoint());
+                if (m != hoveredMember) {
+                    hoveredMember = m;
+                    repaint();
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                hoveredMember = null;
+                repaint();
+            }
+
+            @Override
             public void mouseClicked(MouseEvent e) {
-                long now = System.currentTimeMillis();
-                boolean dbl = now - lastClickTime < 400;
-                lastClickTime = now;
-                for (Map.Entry<Member, Rectangle> entry : memberBounds.entrySet()) {
-                    if (entry.getValue().contains(e.getPoint())) {
-                        if (dbl) {
-                            Member m = entry.getKey();
-                            if (m.getChildren().isEmpty()) {
-                                m.getChildren().addAll(controller.getSubMembers(m));
-                            }
-                            setRootMember(m, true);
+                Member m = findMemberAt(e.getPoint());
+                if (m != null) {
+                    if (e.getClickCount() == 2) {
+                        if (m.getChildren().isEmpty()) {
+                            m.getChildren().addAll(controller.getSubMembers(m));
                         }
-                        break;
+                        setRootMember(m, true);
+                    } else if (e.getClickCount() == 1) {
+                        selectedMember = m;
+                        repaint();
                     }
                 }
             }
-        });
+        };
+        addMouseListener(mouseHandler);
+        addMouseMotionListener(mouseHandler);
+    }
+
+    private Member findMemberAt(Point p) {
+        for (Map.Entry<Member, Rectangle> entry : memberBounds.entrySet()) {
+            if (entry.getValue().contains(p)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     public void setLayoutDirection(LayoutDirection layoutDirection) {
@@ -60,8 +91,11 @@ public class MemberTreeView extends JPanel {
     }
 
     public void setRootMember(Member root, boolean trackHistory) {
-        if (trackHistory && this.rootMember != null) navigationStack.push(this.rootMember);
+        if (trackHistory && this.rootMember != null) {
+            navigationStack.push(this.rootMember);
+        }
         this.rootMember = root;
+        selectedMember = null;
         repaint();
     }
 
@@ -81,9 +115,6 @@ public class MemberTreeView extends JPanel {
         repaint();
     }
 
-    /**
-     * Getter pour l'état sombre, utilisé par le calculator.
-     */
     public boolean isDarkMode() {
         return darkMode;
     }
@@ -92,6 +123,7 @@ public class MemberTreeView extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (rootMember == null) return;
+
         memberBounds.clear();
         maxX = maxY = 0;
         Graphics2D g2 = calculator.prepareGraphics((Graphics2D) g);
@@ -99,14 +131,42 @@ public class MemberTreeView extends JPanel {
         int rootWidth = calculator.computeNodeWidth(g2, rootMember, padding);
         Point start = calculator.computeStartPoint(getWidth(), getHeight(), layoutDirection, rootWidth);
         calculator.drawTree(this, g2, rootMember, start.x, start.y, layoutDirection, memberBounds);
+
+        if (selectedMember != null) {
+            Rectangle r = memberBounds.get(selectedMember);
+            if (r != null) {
+                g2.setColor(Color.YELLOW);
+                g2.setStroke(new BasicStroke(2f));
+                g2.draw(r);
+            }
+        }
+
+        if (hoveredMember != null) {
+            Rectangle r = memberBounds.get(hoveredMember);
+            if (r != null) {
+                g2.setColor(new Color(255, 255, 255, 100));
+                g2.fill(r);
+            }
+        }
+
         setPreferredSize(new Dimension(maxX + 200, maxY + 200));
         revalidate();
     }
 
-    // Accesseurs pour maj des extents
+    // Méthode publique pour le calculator
     public void updateMax(int x, int y) {
         maxX = Math.max(maxX, x);
         maxY = Math.max(maxY, y);
     }
-}
 
+    @Override
+    public String getToolTipText(MouseEvent e) {
+        Member m = findMemberAt(e.getPoint());
+        if (m != null) {
+            return "<html><b>Nom :</b> " + m.getName() +
+                    "<br><b>ID :</b> " + m.getId() +
+                    "<br><b>Enfants :</b> " + m.getChildren().size() + "</html>";
+        }
+        return null;
+    }
+}

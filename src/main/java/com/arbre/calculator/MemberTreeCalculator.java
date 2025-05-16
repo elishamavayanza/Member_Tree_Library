@@ -1,3 +1,4 @@
+// src/main/java/com/arbre/calculator/MemberTreeCalculator.java
 package com.arbre.calculator;
 
 import com.arbre.model.Member;
@@ -9,9 +10,6 @@ import java.awt.geom.CubicCurve2D;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Classe responsable de tous les calculs de width/height et du tracé des connexions.
- */
 public class MemberTreeCalculator {
     public Graphics2D prepareGraphics(Graphics2D g2) {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -21,8 +19,7 @@ public class MemberTreeCalculator {
 
     public int computeNodeWidth(Graphics2D g2, Member m, int padding) {
         FontMetrics fm = g2.getFontMetrics();
-        int w = Math.max(fm.stringWidth(m.getName()) + padding, 80);
-        return w;
+        return Math.max(fm.stringWidth(m.getName()) + padding, 80);
     }
 
     public Point computeStartPoint(int panelW, int panelH, LayoutDirection dir, int rootWidth) {
@@ -46,7 +43,6 @@ public class MemberTreeCalculator {
         int rectY = y - nodeH/2;
         view.updateMax(x + nodeW/2, y + nodeH/2);
 
-        // Dessin du noeud
         g2.setColor(view.isDarkMode() ? Color.LIGHT_GRAY : Color.DARK_GRAY);
         g2.setStroke(new BasicStroke(1.5f));
         g2.drawRoundRect(rectX, rectY, nodeW, nodeH, 15, 15);
