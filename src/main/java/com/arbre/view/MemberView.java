@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import com.arbre.view.LayoutDirection;
 
 public class MemberView extends JFrame {
     private final MemberController controller;
@@ -21,6 +22,8 @@ public class MemberView extends JFrame {
     private final ImageIcon iconOffDark;
     private final ImageIcon iconOffLight;
     private final JToggleButton toggleThemeButton;
+
+    private final JToggleButton toggleLayoutButton;
 
     // Stocker la racine initiale pour pouvoir y revenir
     private final Member initialRoot;
@@ -45,7 +48,6 @@ public class MemberView extends JFrame {
         iconOffDark = SvgUtils.loadSvgIcon("/icons/toggle-off-dark.svg", 24, 24);
         iconOffLight = SvgUtils.loadSvgIcon("/icons/toggle-off-light.svg", 24, 24);
 
-
         setTitle("Arbre de Membres - Futuriste");
         setSize(1000, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -57,6 +59,7 @@ public class MemberView extends JFrame {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         add(scrollPane, BorderLayout.CENTER);
 
+        // Bouton pour changer le thème
         toggleThemeButton = new JToggleButton(iconOnDark);
         toggleThemeButton.setPreferredSize(new Dimension(50, 35));
         toggleThemeButton.setSelected(true);
@@ -67,8 +70,26 @@ public class MemberView extends JFrame {
         });
         toggleThemeButton.addChangeListener(e -> updateToggleIcon());
 
+        // Bouton pour changer la disposition de l'arbre (verticale/horizontale)
+        toggleLayoutButton = new JToggleButton("Vertical");
+        toggleLayoutButton.setPreferredSize(new Dimension(120, 35));
+        toggleLayoutButton.setToolTipText("Changer la disposition (Vertical / Horizontal)");
+        toggleLayoutButton.setSelected(false); // false = vertical par défaut
+        toggleLayoutButton.addActionListener(e -> {
+            if (toggleLayoutButton.isSelected()) {
+                toggleLayoutButton.setText("Horizontal");
+                treeView.setLayoutDirection(LayoutDirection.HORIZONTAL
+                );
+            } else {
+                toggleLayoutButton.setText("Vertical");
+                treeView.setLayoutDirection(LayoutDirection.VERTICAL
+                );
+            }
+            treeView.repaint();
+        });
 
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.add(toggleLayoutButton);
         bottomPanel.add(toggleThemeButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
@@ -142,7 +163,4 @@ public class MemberView extends JFrame {
             toggleThemeButton.setIcon(darkMode ? iconOffLight : iconOffDark);
         }
     }
-
-
-
 }

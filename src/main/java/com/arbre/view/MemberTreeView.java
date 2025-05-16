@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.arbre.view.LayoutDirection;
+
 import java.util.Stack;
 
 /**
@@ -31,12 +33,15 @@ public class MemberTreeView extends JPanel {
     private int maxX = 0;
     private int maxY = 0;
 
+    private LayoutDirection layoutDirection = LayoutDirection.VERTICAL;
+
     private final Stack<Member> navigationStack = new Stack<>();
 
     /**
      * Change le membre racine de l’arbre affiché.
      * Si trackHistory est vrai, ajoute le membre courant à une pile de navigation pour permettre un retour arrière.
      * Puis, définit la nouvelle racine et redessine la vue.
+     *
      * @param controller
      */
     public MemberTreeView(MemberController controller) {
@@ -73,8 +78,18 @@ public class MemberTreeView extends JPanel {
 
     }
 
+    public void setLayoutDirection(LayoutDirection layoutDirection) {
+        this.layoutDirection = layoutDirection;
+        repaint();
+    }
+
+    public LayoutDirection getLayoutDirection() {
+        return layoutDirection;
+    }
+
     /**
      * Surcharge pratique qui appelle la précédente avec trackHistory = true
+     *
      * @param rootMember
      * @param trackHistory
      */
@@ -99,6 +114,7 @@ public class MemberTreeView extends JPanel {
      * Appelle la méthode récursive drawMemberTree pour dessiner tout l’arbre,
      * Met à jour dynamiquement la taille préférée du panneau (setPreferredSize),
      * Appelle revalidate() pour forcer la mise à jour des barres de défilement si le panneau est dans un JScrollPane.
+     *
      * @param g the <code>Graphics</code> object to protect
      */
     @Override
@@ -110,19 +126,39 @@ public class MemberTreeView extends JPanel {
             maxY = 0;
 
             Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
 
-            drawMemberTree(g2, rootMember, getWidth() / 2, 40, 200);
+            int padding = 20; // votre padding habituel
+            // mesurez la largeur de la racine
+            g2.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            FontMetrics fmRoot = g2.getFontMetrics();
+            int rootTextWidth = fmRoot.stringWidth(rootMember.getName());
+            int rootWidth = Math.max(rootTextWidth + padding, 80);
 
-            // Mettre à jour la taille préférée dynamiquement
+            int startX, startY;
+            if (layoutDirection == LayoutDirection.VERTICAL) {
+                startX = getWidth() / 2;
+                startY = 40;
+            } else {
+                int horizontalMargin = 40;
+                // on centre la racine sur horizontalMargin + rootWidth/2
+                startX = horizontalMargin + rootWidth / 2;
+                startY = getHeight() / 2;
+            }
+
+            drawMemberTree(g2, rootMember, startX, startY, 200);
+
             setPreferredSize(new Dimension(maxX + 200, maxY + 200));
-            revalidate(); // Forcer le JScrollPane à mettre à jour les scrollbars
+            revalidate();
         }
     }
+
 
     /**
      * Calcule récursivement la largeur nécessaire pour dessiner tous les descendants du member.
      * Retourne un total basé sur la largeur cumulée des sous-arbres des enfants.
+     *
      * @param member
      * @return
      */
@@ -146,7 +182,6 @@ public class MemberTreeView extends JPanel {
     }
 
 
-
     /**
      * Méthode récursive pour dessiner un membre et tous ses enfants.
      * Calcule les dimensions du bloc de texte, dessine un rectangle avec bords arrondis.
@@ -156,66 +191,152 @@ public class MemberTreeView extends JPanel {
      * Calcule la largeur de sous-arbre et leur position horizontale.
      * Appelle drawConnection pour dessiner une ligne entre parent et enfant.
      * Récursivement dessine chaque enfant.
+     *
      * @param g
      * @param member
      * @param x
      * @param y
      * @param offsetX
      */
-    private void drawMemberTree(Graphics2D g, Member member, int x, int y, int offsetX) {
+    private void drawMemberTree(Graphics2D g, Member member, int x, int y, int offset) {
         g.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         FontMetrics fm = g.getFontMetrics();
         int textWidth = fm.stringWidth(member.getName());
         int textHeight = fm.getAscent();
 
-        int padding = 20; // marge à gauche et droite (total 20px = 10 de chaque côté)
-        int width = Math.max(textWidth + padding, 80); // largeur min 80
+        int padding = 20;
+        int width = Math.max(textWidth + padding, 80);
         int height = 30;
         int arc = 15;
         int rectX = x - width / 2;
         int rectY = y - height / 2;
 
-        // Suivre la zone maximale atteinte
         maxX = Math.max(maxX, x + width / 2);
         maxY = Math.max(maxY, y + height / 2);
 
-        // Couleur bordure selon mode
         Color borderColor = darkMode ? Color.LIGHT_GRAY : Color.DARK_GRAY;
         g.setColor(borderColor);
         g.setStroke(new BasicStroke(1.5f));
         g.drawRoundRect(rectX, rectY, width, height, arc, arc);
-
-        // Texte centré horizontalement
         g.setColor(borderColor);
         g.drawString(member.getName(), x - textWidth / 2, y + textHeight / 4);
-
-        // Zone cliquable
         memberBounds.put(member, new Rectangle(rectX, rectY, width, height));
 
-        // Dessiner enfants récursivement
         List<Member> children = member.getChildren();
         if (!children.isEmpty()) {
-            // Nouvelle version de la boucle des enfants
-            int subtreeWidth = getSubtreeWidth(g, member);
-            int startX = x - subtreeWidth / 2;
+            int spacing = Math.max(40, height + 10);
 
-            for (Member child : children) {
-                int childSubtreeWidth = getSubtreeWidth(g, child);
-                int childX = startX + childSubtreeWidth / 2;
-                int childY = y + 100;
+            if (layoutDirection == LayoutDirection.VERTICAL) {
+                int subtreeWidth = getSubtreeWidth(g, member);
+                int startX = x - subtreeWidth / 2;
 
-                drawConnection(g, x, y + height / 2, childX, childY - height / 2);
-                drawMemberTree(g, child, childX, childY, offsetX);
+                for (Member child : children) {
+                    int childSubtreeWidth = getSubtreeWidth(g, child);
+                    int childX = startX + childSubtreeWidth / 2;
+                    int childY = y + 100;
 
-                startX += childSubtreeWidth + 40; // 40px d'espacement entre les sous-arbres
+                    drawConnection(g, x, y + height / 2, childX, childY - height / 2);
+                    drawMemberTree(g, child, childX, childY, offset);
+
+                    startX += childSubtreeWidth + spacing;
+                }
+            } else { // HORIZONTAL
+                int margin = 10;
+                int baseSpacing = 40;  // espacement minimal
+                // on a déjà mesuré pour le parent :
+                FontMetrics fmParent = g.getFontMetrics();
+                int parentTextWidth = fmParent.stringWidth(member.getName());
+                int parentWidth = Math.max(parentTextWidth + padding, 80);
+
+                // calcule la hauteur totale pour le placement vertical des enfants
+                int subtreeHeight = getSubtreeHeight(g, member);
+                int startY = y - subtreeHeight / 2;
+
+                for (Member child : children) {
+                    // largeur de la boîte de l'enfant
+                    FontMetrics fmChild = g.getFontMetrics();
+                    int childTextWidth = fmChild.stringWidth(child.getName());
+                    int childWidth = Math.max(childTextWidth + padding, 80);
+
+                    // nouvelle abscisse : on part du centre du parent,
+                    // on ajoute la moitié de sa boîte + espacement + moitié de la boîte enfant
+                    int childX = x + parentWidth / 2 + baseSpacing + childWidth / 2;
+
+                    // position Y centré sur sa sous-hauteur
+                    int childHeight = getSubtreeHeight(g, child);
+                    int childY = startY + childHeight / 2;
+
+                    // dessine la connexion
+                    int parentRightX = x + parentWidth / 2;
+                    int childLeftX = childX - childWidth / 2;
+                    drawConnectionHorizontal(g, parentRightX, y, childLeftX, childY);
+
+                    // récursion
+                    drawMemberTree(g, child, childX, childY, offset);
+
+                    // avance le curseur vertical en fonction de la hauteur du sous-arbre + espacement
+                    startY += childHeight + baseSpacing;
+                }
+
+                // ajuste la taille max pour le scroll
+                maxX = Math.max(maxX, children.isEmpty()
+                        ? x + parentWidth
+                        : x + parentWidth / 2 + baseSpacing + children.stream()
+                        .mapToInt(c -> {
+                            int w = Math.max(g.getFontMetrics().stringWidth(c.getName()) + padding, 80);
+                            return w / 2;
+                        }).max().orElse(0));
             }
+
 
         }
     }
 
+    private int getSubtreeHeight(Graphics2D g, Member member) {
+        FontMetrics fm = g.getFontMetrics();
+        int textHeight = fm.getHeight();
+        int padding = 20;
+        int nodeHeight = Math.max(textHeight + padding, 30);
+
+        int spacing = 40;
+
+        if (member.getChildren().isEmpty()) {
+            return nodeHeight;
+        }
+
+        int totalHeight = 0;
+        for (Member child : member.getChildren()) {
+            totalHeight += getSubtreeHeight(g, child) + spacing;
+        }
+
+        totalHeight -= spacing; // éviter l'espacement final inutile
+        return Math.max(totalHeight, nodeHeight);
+    }
+
+
+    private void drawConnectionHorizontal(Graphics2D g, int x1, int y1, int x2, int y2) {
+        g.setColor(Color.GRAY);
+        g.setStroke(new BasicStroke(1.5f));
+
+        int ctrlX1 = (x1 + x2) / 2;
+        int ctrlY1 = y1;
+        int ctrlX2 = (x1 + x2) / 2;
+        int ctrlY2 = y2;
+
+        CubicCurve2D curve = new CubicCurve2D.Float(
+                x1, y1,
+                ctrlX1, ctrlY1,
+                ctrlX2, ctrlY2,
+                x2, y2
+        );
+        g.draw(curve);
+    }
+
+
     /**
      * Dessine une courbe de Bézier entre un parent et un enfant.
      * Crée un lien visuel doux entre les nœuds en courbe, avec des couleurs adaptables au thème sombre.
+     *
      * @param g
      * @param parentX
      * @param parentY
@@ -238,7 +359,7 @@ public class MemberTreeView extends JPanel {
 
     /**
      * Revenir à l’état précédent de navigation.
-     *
+     * <p>
      * Retire le dernier membre de la pile et le définit comme racine, sans re-remplir la pile.
      */
     public void goBack() {
@@ -250,8 +371,9 @@ public class MemberTreeView extends JPanel {
 
     /**
      * Active ou désactive le mode sombre.
-     *
+     * <p>
      * Change la couleur de fond et redessine la vue.
+     *
      * @param darkMode
      */
     public void setDarkMode(boolean darkMode) {

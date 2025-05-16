@@ -27,8 +27,11 @@ public class Main {
             controller.createMember("D", rootMember);
             controller.createMember("E", rootMember);
             controller.createMember("F", rootMember);
+            controller.createMember("G", rootMember);
+            controller.createMember("H", rootMember);
 
-            for (int i = 0; i <5; i++) {
+
+            for (int i = 0; i <7; i++) {
                 Member member = rootMember.getChildren().get(i);
 
                 int count  = Double.valueOf(Math.round(Math.random() * 10)).intValue();
