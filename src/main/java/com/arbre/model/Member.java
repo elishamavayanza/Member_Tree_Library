@@ -1,47 +1,59 @@
+// src/main/java/com/arbre/model/Member.java
 package com.arbre.model;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Member {
-    private String id; // UUID
+public class Member implements IMember {
+    private String id;
     private String name;
-    private List<Member> children;
+    private final List<Member> children;
 
+    /** Génère un nouveau Member avec un UUID aléatoire */
     public Member(String name) {
-        this.id = UUID.randomUUID().toString(); // Générer un UUID par défaut
-        this.name = name;
-        this.children = new ArrayList<>();
+        this(UUID.randomUUID().toString(), name);
     }
 
-    // Nouveau constructeur pour charger avec un id donné (ex : depuis la BDD)
+    /** Construit un Member à partir d’un id existant */
     public Member(String id, String name) {
         this.id = id;
         this.name = name;
         this.children = new ArrayList<>();
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
-    // Setter ajouté pour id (utile pour mapResultSetToMember)
+    @Override
     public void setId(String id) {
         this.id = id;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
     public List<Member> getChildren() {
         return children;
     }
 
-    public boolean addChild(Member child) {
-        children.add(child);
-        return true;
+    @Override
+    public boolean addChild(IMember child) {
+        // On peut vérifier que child est bien un Member sinon adapter ici
+        if (child instanceof Member) {
+            return children.add((Member) child);
+        }
+        throw new IllegalArgumentException("Child must be a Member");
     }
 
     @Override
