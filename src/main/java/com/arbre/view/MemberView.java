@@ -91,8 +91,10 @@ public class MemberView extends JFrame {
         add(bottomPanel, BorderLayout.SOUTH);
 
         // Key Binding Backspace
+        // Key Binding Backspace
         InputMap im = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = getRootPane().getActionMap();
+
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "goBack");
         am.put("goBack", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
@@ -101,10 +103,21 @@ public class MemberView extends JFrame {
             }
         });
 
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.SHIFT_DOWN_MASK), "goForward");  // Shift+R
+        am.put("goForward", new AbstractAction() {
+            @Override public void actionPerformed(ActionEvent e) {
+                treeView.goForward();
+                treeView.repaint();
+            }
+        });
+
+
         SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
         updateTheme();
         updateLayoutIcon();
     }
+
+
 
     /**
      * Permet à l'utilisateur (ex : Main) de récupérer directement la vue de l'arbre.

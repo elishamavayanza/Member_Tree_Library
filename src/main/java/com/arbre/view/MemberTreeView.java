@@ -34,6 +34,9 @@ public class MemberTreeView extends JPanel {
     private Member hoveredMember = null;
     private Member selectedMember = null;
 
+
+    private final Stack<Member> forwardStack = new Stack<>();
+
     public MemberTreeView(MemberController controller) {
         this.controller = controller;
         setBackground(darkMode ? new Color(10, 10, 25) : Color.WHITE);
@@ -93,6 +96,7 @@ public class MemberTreeView extends JPanel {
     public void setRootMember(Member root, boolean trackHistory) {
         if (trackHistory && this.rootMember != null) {
             navigationStack.push(this.rootMember);
+            forwardStack.clear(); // On vide la pile forward si on change la branche (nouvelle navigation)
         }
         this.rootMember = root;
         selectedMember = null;
@@ -105,6 +109,7 @@ public class MemberTreeView extends JPanel {
 
     public void goBack() {
         if (!navigationStack.isEmpty()) {
+            forwardStack.push(this.rootMember);  // Sauvegarde l'état courant dans forward
             setRootMember(navigationStack.pop(), false);
         }
     }
@@ -159,6 +164,8 @@ public class MemberTreeView extends JPanel {
         maxY = Math.max(maxY, y);
     }
 
+
+
     @Override
     public String getToolTipText(MouseEvent e) {
         Member m = findMemberAt(e.getPoint());
@@ -169,4 +176,14 @@ public class MemberTreeView extends JPanel {
         }
         return null;
     }
+
+    public void goForward() {
+        if (!forwardStack.isEmpty()) {
+            navigationStack.push(this.rootMember);  // Sauvegarde dans back stack
+            setRootMember(forwardStack.pop(), false);
+        }
+    }
+
+
+
 }
