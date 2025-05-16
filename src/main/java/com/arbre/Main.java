@@ -34,7 +34,7 @@ public class Main {
                 int count  = Double.valueOf(Math.round(Math.random() * 10)).intValue();
 
                 for (int j = 0; j < count; j++) {
-                    controller.createMember(member+" TRUC OK MACHINE"+j, member);
+                    controller.createMember(member+" TRUC OK MACHINE OF ELISHAMA VAYANZA"+j, member);
                 }
             }
 

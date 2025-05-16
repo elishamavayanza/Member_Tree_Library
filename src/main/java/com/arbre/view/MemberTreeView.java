@@ -124,17 +124,28 @@ public class MemberTreeView extends JPanel {
      * Calcule récursivement la largeur nécessaire pour dessiner tous les descendants du member.
      * Retourne un total basé sur la largeur cumulée des sous-arbres des enfants.
      * @param member
-     * @param offsetX
      * @return
      */
-    private int getSubtreeWidth(Member member, int offsetX) {
-        if (member.getChildren().isEmpty()) return offsetX;
+    private int getSubtreeWidth(Graphics2D g, Member member) {
+        FontMetrics fm = g.getFontMetrics();
+        int textWidth = fm.stringWidth(member.getName());
+        int nodeWidth = Math.max(textWidth + 20, 80); // 20 = padding total
+        int spacing = 40;
+
+        if (member.getChildren().isEmpty()) {
+            return nodeWidth;
+        }
+
         int totalWidth = 0;
         for (Member child : member.getChildren()) {
-            totalWidth += getSubtreeWidth(child, offsetX);
+            totalWidth += getSubtreeWidth(g, child) + spacing;
         }
-        return totalWidth;
+        totalWidth -= spacing; // retirer l'espacement en trop après le dernier enfant
+
+        return Math.max(totalWidth, nodeWidth); // S'assurer que le parent est au moins aussi large que ses enfants
     }
+
+
 
     /**
      * Méthode récursive pour dessiner un membre et tous ses enfants.
@@ -158,7 +169,7 @@ public class MemberTreeView extends JPanel {
         int textHeight = fm.getAscent();
 
         int padding = 20; // marge à gauche et droite (total 20px = 10 de chaque côté)
-        int width = textWidth + padding;
+        int width = Math.max(textWidth + padding, 80); // largeur min 80
         int height = 30;
         int arc = 15;
         int rectX = x - width / 2;
@@ -184,20 +195,21 @@ public class MemberTreeView extends JPanel {
         // Dessiner enfants récursivement
         List<Member> children = member.getChildren();
         if (!children.isEmpty()) {
-            int subtreeWidth = getSubtreeWidth(member, offsetX);
+            // Nouvelle version de la boucle des enfants
+            int subtreeWidth = getSubtreeWidth(g, member);
             int startX = x - subtreeWidth / 2;
 
             for (Member child : children) {
-                int childSubtreeWidth = getSubtreeWidth(child, offsetX);
+                int childSubtreeWidth = getSubtreeWidth(g, child);
                 int childX = startX + childSubtreeWidth / 2;
                 int childY = y + 100;
 
-                // Lien parent-enfant
                 drawConnection(g, x, y + height / 2, childX, childY - height / 2);
-
                 drawMemberTree(g, child, childX, childY, offsetX);
-                startX += childSubtreeWidth;
+
+                startX += childSubtreeWidth + 40; // 40px d'espacement entre les sous-arbres
             }
+
         }
     }
 
