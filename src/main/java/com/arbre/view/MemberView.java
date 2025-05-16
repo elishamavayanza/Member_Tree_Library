@@ -8,9 +8,8 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import com.arbre.view.LayoutDirection;
 
 public class MemberView extends JFrame {
     private final MemberController controller;
@@ -22,7 +21,6 @@ public class MemberView extends JFrame {
     private final ImageIcon iconOffDark;
     private final ImageIcon iconOffLight;
     private final JToggleButton toggleThemeButton;
-
     private final JToggleButton toggleLayoutButton;
 
     // Stocker la racine initiale pour pouvoir y revenir
@@ -43,10 +41,10 @@ public class MemberView extends JFrame {
         treeView.setRootMember(initialRoot); // Afficher la racine initiale
 
         // Charger les icônes SVG
-        iconOnDark = SvgUtils.loadSvgIcon("/icons/toggle-on-dark.svg", 24, 24);
+        iconOnDark  = SvgUtils.loadSvgIcon("/icons/toggle-on-dark.svg",  24, 24);
         iconOnLight = SvgUtils.loadSvgIcon("/icons/toggle-on-light.svg", 24, 24);
         iconOffDark = SvgUtils.loadSvgIcon("/icons/toggle-off-dark.svg", 24, 24);
-        iconOffLight = SvgUtils.loadSvgIcon("/icons/toggle-off-light.svg", 24, 24);
+        iconOffLight= SvgUtils.loadSvgIcon("/icons/toggle-off-light.svg",24, 24);
 
         setTitle("Arbre de Membres - Futuriste");
         setSize(1000, 700);
@@ -78,14 +76,13 @@ public class MemberView extends JFrame {
         toggleLayoutButton.addActionListener(e -> {
             if (toggleLayoutButton.isSelected()) {
                 toggleLayoutButton.setText("Horizontal");
-                treeView.setLayoutDirection(LayoutDirection.HORIZONTAL
-                );
+                treeView.setLayoutDirection(LayoutDirection.HORIZONTAL);
             } else {
                 toggleLayoutButton.setText("Vertical");
-                treeView.setLayoutDirection(LayoutDirection.VERTICAL
-                );
+                treeView.setLayoutDirection(LayoutDirection.VERTICAL);
             }
             treeView.repaint();
+            SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
         });
 
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -93,20 +90,20 @@ public class MemberView extends JFrame {
         bottomPanel.add(toggleThemeButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // Gestion du raccourci clavier : Backspace déclenche goBack()
-        treeView.addKeyListener(new KeyAdapter() {
+        // --- Key Binding pour Backspace sur toute la fenêtre ---
+        InputMap im = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap am = getRootPane().getActionMap();
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "goBack");
+        am.put("goBack", new AbstractAction() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
-                    treeView.goBack();
-                    treeView.repaint();
-                    treeView.requestFocusInWindow();
-                }
+            public void actionPerformed(ActionEvent e) {
+                treeView.goBack();
+                treeView.repaint();
             }
         });
 
-        treeView.setFocusable(true);
-        treeView.requestFocusInWindow();
+        // Donner le focus initial au treeView
+        SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
 
         updateTheme();
     }
@@ -134,30 +131,20 @@ public class MemberView extends JFrame {
             } else {
                 UIManager.setLookAndFeel(new FlatLightLaf());
             }
-
-            // Mettre à jour l’interface
             SwingUtilities.updateComponentTreeUI(this);
             treeView.setDarkMode(darkMode);
-
-            // Re-appliquer l’icône du bouton
             updateToggleIcon();
-
-            // 🔥 Redonner le focus au treeView pour garder les raccourcis clavier fonctionnels
             SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
-
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Met à jour l’icône du bouton de bascule de thème selon l’état actuel :
-     * - `selected` indique le mode activé
-     * - L’icône s’adapte à l’état `darkMode`
+     * Met à jour l’icône du bouton de bascule de thème selon l’état actuel.
      */
     private void updateToggleIcon() {
         if (toggleThemeButton.isSelected()) {
-            // Montrer l'icône du thème opposé à celui en cours
             toggleThemeButton.setIcon(darkMode ? iconOnLight : iconOnDark);
         } else {
             toggleThemeButton.setIcon(darkMode ? iconOffLight : iconOffDark);
