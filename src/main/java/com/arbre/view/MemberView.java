@@ -16,35 +16,40 @@ public class MemberView extends JFrame {
     private final MemberTreeView treeView;
     private boolean darkMode = true;
 
+    // Icônes thème
     private final ImageIcon iconOnDark;
     private final ImageIcon iconOnLight;
     private final ImageIcon iconOffDark;
     private final ImageIcon iconOffLight;
+
+    // Icônes layout
+    private final ImageIcon iconVertDark;
+    private final ImageIcon iconVertLight;
+    private final ImageIcon iconHorizDark;
+    private final ImageIcon iconHorizLight;
+
     private final JToggleButton toggleThemeButton;
     private final JToggleButton toggleLayoutButton;
 
-    // Stocker la racine initiale pour pouvoir y revenir
     private final Member initialRoot;
 
-    /**
-     * Constructeur de la fenêtre principale de l'application.
-     * Initialise l'arbre des membres, les icônes, le thème, les listeners, et la barre de défilement.
-     *
-     * @param controller Le contrôleur chargé de la logique métier.
-     */
     public MemberView(MemberController controller) {
         this.controller = controller;
         this.treeView = new MemberTreeView(controller);
-
-        // Récupérer la racine initiale depuis le controller
         this.initialRoot = controller.getRootMember();
-        treeView.setRootMember(initialRoot); // Afficher la racine initiale
+        treeView.setRootMember(initialRoot);
 
-        // Charger les icônes SVG
-        iconOnDark  = SvgUtils.loadSvgIcon("/icons/toggle-on-dark.svg",  24, 24);
-        iconOnLight = SvgUtils.loadSvgIcon("/icons/toggle-on-light.svg", 24, 24);
-        iconOffDark = SvgUtils.loadSvgIcon("/icons/toggle-off-dark.svg", 24, 24);
-        iconOffLight= SvgUtils.loadSvgIcon("/icons/toggle-off-light.svg",24, 24);
+        // Chargement des icônes thème
+        iconOnDark   = SvgUtils.loadSvgIcon("/icons/toggle-on-dark.svg", 24, 24);
+        iconOnLight  = SvgUtils.loadSvgIcon("/icons/toggle-on-light.svg", 24, 24);
+        iconOffDark  = SvgUtils.loadSvgIcon("/icons/toggle-off-dark.svg", 24, 24);
+        iconOffLight = SvgUtils.loadSvgIcon("/icons/toggle-off-light.svg", 24, 24);
+
+        // Chargement des icônes layout
+        iconVertDark   = SvgUtils.loadSvgIcon("/icons/swap-vertical-circle-dark.svg", 24, 24);
+        iconVertLight  = SvgUtils.loadSvgIcon("/icons/swap-vertical-circle-light.svg", 24, 24);
+        iconHorizDark  = SvgUtils.loadSvgIcon("/icons/swap-horizontal-circle-dark.svg", 24, 24);
+        iconHorizLight = SvgUtils.loadSvgIcon("/icons/swap-horizontal-circle-light.svg", 24, 24);
 
         setTitle("Arbre de Membres - Futuriste");
         setSize(1000, 700);
@@ -53,11 +58,9 @@ public class MemberView extends JFrame {
 
         JScrollPane scrollPane = new JScrollPane(treeView);
         scrollPane.setPreferredSize(new Dimension(1000, 700));
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Bouton pour changer le thème
+        // Bouton thème
         toggleThemeButton = new JToggleButton(iconOnDark);
         toggleThemeButton.setPreferredSize(new Dimension(50, 35));
         toggleThemeButton.setSelected(true);
@@ -68,19 +71,16 @@ public class MemberView extends JFrame {
         });
         toggleThemeButton.addChangeListener(e -> updateToggleIcon());
 
-        // Bouton pour changer la disposition de l'arbre (verticale/horizontale)
-        toggleLayoutButton = new JToggleButton("Vertical");
-        toggleLayoutButton.setPreferredSize(new Dimension(120, 35));
-        toggleLayoutButton.setToolTipText("Changer la disposition (Vertical / Horizontal)");
-        toggleLayoutButton.setSelected(false); // false = vertical par défaut
+        // Bouton layout
+        toggleLayoutButton = new JToggleButton();
+        toggleLayoutButton.setPreferredSize(new Dimension(50, 35));
+        toggleLayoutButton.setToolTipText("Basculer Vertical / Horizontal");
+        toggleLayoutButton.setSelected(false); // false = vertical
         toggleLayoutButton.addActionListener(e -> {
-            if (toggleLayoutButton.isSelected()) {
-                toggleLayoutButton.setText("Horizontal");
-                treeView.setLayoutDirection(LayoutDirection.HORIZONTAL);
-            } else {
-                toggleLayoutButton.setText("Vertical");
-                treeView.setLayoutDirection(LayoutDirection.VERTICAL);
-            }
+            treeView.setLayoutDirection(
+                    toggleLayoutButton.isSelected() ? LayoutDirection.HORIZONTAL : LayoutDirection.VERTICAL
+            );
+            updateLayoutIcon();
             treeView.repaint();
             SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
         });
@@ -90,59 +90,51 @@ public class MemberView extends JFrame {
         bottomPanel.add(toggleThemeButton);
         add(bottomPanel, BorderLayout.SOUTH);
 
-        // --- Key Binding pour Backspace sur toute la fenêtre ---
+        // Key Binding Backspace
         InputMap im = getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = getRootPane().getActionMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "goBack");
         am.put("goBack", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e) {
                 treeView.goBack();
                 treeView.repaint();
             }
         });
 
-        // Donner le focus initial au treeView
         SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
-
         updateTheme();
+        updateLayoutIcon();
     }
 
     /**
-     * Retourne la vue graphique de l’arbre des membres.
-     *
-     * @return l'objet MemberTreeView affichant l’arborescence.
+     * Permet à l'utilisateur (ex : Main) de récupérer directement la vue de l'arbre.
      */
     public MemberTreeView getTreeView() {
         return treeView;
     }
 
-    /**
-     * Met à jour le thème (sombre ou clair) de l’interface :
-     * - Change le Look & Feel (FlatLaf)
-     * - Met à jour tous les composants Swing
-     * - Applique le thème au MemberTreeView
-     * - Met à jour l’icône du bouton de bascule
-     */
+    private void updateLayoutIcon() {
+        boolean horizontal = toggleLayoutButton.isSelected();
+        toggleLayoutButton.setIcon(
+                horizontal
+                        ? (darkMode ? iconHorizLight : iconHorizDark)
+                        : (darkMode ? iconVertLight  : iconVertDark)
+        );
+    }
+
     private void updateTheme() {
         try {
-            if (darkMode) {
-                UIManager.setLookAndFeel(new FlatDarkLaf());
-            } else {
-                UIManager.setLookAndFeel(new FlatLightLaf());
-            }
+            UIManager.setLookAndFeel(darkMode ? new FlatDarkLaf() : new FlatLightLaf());
             SwingUtilities.updateComponentTreeUI(this);
             treeView.setDarkMode(darkMode);
+            // Mise à jour des icônes thème et layout immédiatement
             updateToggleIcon();
-            SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
+            updateLayoutIcon();
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Met à jour l’icône du bouton de bascule de thème selon l’état actuel.
-     */
     private void updateToggleIcon() {
         if (toggleThemeButton.isSelected()) {
             toggleThemeButton.setIcon(darkMode ? iconOnLight : iconOnDark);
