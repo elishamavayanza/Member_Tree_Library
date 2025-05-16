@@ -52,6 +52,7 @@ frame.setVisible(true);
 ## 📁 Structure du projet
 - com.arbre.model : Définition des membres
 - com.arbre.controller : Logique métier et gestion de l’arbre
+- com.arbre.calculator : Logique pour le calcul de la disposition de l'arbre
 - com.arbre.view : Composant graphique Swing pour afficher l’arbre
 - com.arbre.util : Outils utilitaires, notamment pour les icônes SVG
 
@@ -67,7 +68,9 @@ mvn clean compile exec:java
 - svgSalamander 1.1.4 : affichage d’icônes SVG
 
 ## 📸 Aperçu
-![Aperçu de l'arbre des membres](libs/arbre-member.JPG)
+![Aperçu de l'arbre des membres en mode vertical](libs/arbre-member.JPG)
+![Aperçu de l'arbre des membres en mode horizontal](libs/mode-horizontal.JPG)
+
 
 ## 🔧 Personnalisation
 - Le composant MemberTreeView peut être intégré dans n'importe quelle interface Swing
