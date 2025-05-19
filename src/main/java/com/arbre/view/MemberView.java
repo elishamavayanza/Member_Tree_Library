@@ -1,6 +1,7 @@
 package com.arbre.view;
 
 import com.arbre.controller.MemberController;
+import com.arbre.layout.TreeLayoutCalculator;
 import com.arbre.model.Member;
 import com.arbre.util.SvgUtils;
 import com.formdev.flatlaf.FlatDarkLaf;
@@ -33,10 +34,13 @@ public class MemberView extends JFrame {
 
     private final Member initialRoot;
 
+    private final JScrollPane scrollPane;
+
     public MemberView(MemberController controller) {
         this.controller = controller;
         this.treeView = new MemberTreeView(controller);
         this.initialRoot = controller.getRootMember();
+        this.scrollPane = new JScrollPane(treeView);
         treeView.setRootMember(initialRoot);
 
         // Chargement des icônes thème
@@ -56,7 +60,6 @@ public class MemberView extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        JScrollPane scrollPane = new JScrollPane(treeView);
         scrollPane.setPreferredSize(new Dimension(1000, 700));
         add(scrollPane, BorderLayout.CENTER);
 
@@ -81,7 +84,9 @@ public class MemberView extends JFrame {
                     toggleLayoutButton.isSelected() ? LayoutDirection.HORIZONTAL : LayoutDirection.VERTICAL
             );
             updateLayoutIcon();
-            treeView.repaint();
+            treeView.revalidate();
+            scrollPane.revalidate();
+            scrollPane.repaint();
             SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
         });
 
