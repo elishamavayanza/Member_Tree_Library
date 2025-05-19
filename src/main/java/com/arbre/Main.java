@@ -17,18 +17,18 @@ public class Main {
             MemberController controller = new MemberController();
 
             // Créer un membre racine (par exemple un administrateur principal)
-            Member rootMember = new Member("ROOT");
+            Member rootMember = new Member("ROOTeeeeeeeeeeeeeeeeeeeeeeeeeeee");
 
             // Définir le membre racine dans le contrôleur (s'il faut l'afficher dans la vue)
             controller.createMember(rootMember.getName(), null);  // L'ajouter au contrôleur
-            controller.createMember("A", rootMember);
-            controller.createMember("B", rootMember);
-            controller.createMember("C", rootMember);
-            controller.createMember("D", rootMember);
-            controller.createMember("E", rootMember);
-            controller.createMember("F", rootMember);
-            controller.createMember("G", rootMember);
-            controller.createMember("H", rootMember);
+            controller.createMember("Aoooooooooooooo", rootMember);
+            controller.createMember("Bllllllllllllllllll", rootMember);
+            controller.createMember("Clllllllllllllllll", rootMember);
+            controller.createMember("Dllllllllllllllllll", rootMember);
+            controller.createMember("Elllllllllllllllll", rootMember);
+            controller.createMember("Fllllllllllllllllll", rootMember);
+            controller.createMember("Glllllllllllllllll", rootMember);
+            controller.createMember("H000000000000000000", rootMember);
 
 
             for (int i = 0; i <7; i++) {
@@ -37,7 +37,7 @@ public class Main {
                 int count  = Double.valueOf(Math.round(Math.random() * 10)).intValue();
 
                 for (int j = 0; j < count; j++) {
-                    controller.createMember(member+" TRUC OK MACHINE OF ELISHAMA VAYANZA"+j, member);
+                    controller.createMember(member+"TRUC OK MACHINE OF ELISHAMA VAYANZA"+j, member);
                 }
             }
 
