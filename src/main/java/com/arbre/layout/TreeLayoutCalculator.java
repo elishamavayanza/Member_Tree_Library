@@ -14,13 +14,16 @@ public class TreeLayoutCalculator {
     private final int verticalSpacing;
     private final int minNodeWidth;
     private final int nodeHeight;
+    private final int padX, padY;
 
-    public TreeLayoutCalculator(TextMeasurer measurer, int horizontalSpacing, int verticalSpacing, int minNodeWidth, int nodeHeight) {
+    public TreeLayoutCalculator(TextMeasurer measurer, int horizontalSpacing, int verticalSpacing, int minNodeWidth, int nodeHeight, int padX, int padY) {
         this.measurer = measurer;
         this.horizontalSpacing = horizontalSpacing;
         this.verticalSpacing = verticalSpacing;
         this.minNodeWidth = minNodeWidth;
         this.nodeHeight = nodeHeight;
+        this.padX = padX;
+        this.padY = padY;
     }
 
     /**
@@ -37,8 +40,10 @@ public class TreeLayoutCalculator {
 
 
     private void layoutNode(IMember node, int x, int y, LayoutDirection dir, Map<IMember, NodeBounds> boundsMap) {
-        int w = measurer.measureWidth(node.getName(), minNodeWidth);
-        int h = nodeHeight;
+        int textw = measurer.measureWidth(node.getName(), minNodeWidth);
+        int w = textw + 2 * padX;
+        int h = nodeHeight + 2 * padY;
+
         boundsMap.put(node, new NodeBounds(node.getId(), node.getName(), x - w / 2, y - h / 2, w, h));
         List<? extends IMember> children = node.getChildren();
         if (children.isEmpty()) return;
@@ -74,7 +79,8 @@ public class TreeLayoutCalculator {
 
     private int computeSubtreeWidth(IMember node) {
         List<? extends IMember> children = node.getChildren();
-        int w = measurer.measureWidth(node.getName(), minNodeWidth);
+        int textW = measurer.measureWidth(node.getName(), minNodeWidth);
+        int w = textW + 2 * padX;
         if (children.isEmpty()) return w;
         int sum = 0;
         for (IMember c : children) sum += computeSubtreeWidth(c) + horizontalSpacing;
@@ -83,7 +89,7 @@ public class TreeLayoutCalculator {
 
     private int computeSubtreeHeight(IMember node) {
         List<? extends IMember> children = node.getChildren();
-        int h = nodeHeight;
+        int h = nodeHeight + 2 * padY;
         if (children.isEmpty()) return h;
         int sum = 0;
         for (IMember c : children) sum += computeSubtreeHeight(c) + verticalSpacing;
@@ -180,6 +186,7 @@ public class TreeLayoutCalculator {
                 pts.add(new Point(x11 + (x22 - x11) / 2,y11));
                 pts.add(new Point(x11 + (x22 - x11) / 2, y22));
                 pts.add(new Point(x22, y22));
+
             }
             return new Connection(p.id, c.id, pts);
         }

@@ -37,7 +37,7 @@ public class MemberTreeView extends JPanel {
             FontMetrics fm = getFontMetrics(font);
             return Math.max(fm.stringWidth(text), minWidth);
         };
-        this.calculator = new TreeLayoutCalculator(measurer, 40, 100, 80, 30);
+        this.calculator = new TreeLayoutCalculator(measurer, 40, 100, 80, 30,10, 0);
 
         setBackground(darkMode ? new Color(10, 10, 25) : Color.WHITE);
         ToolTipManager.sharedInstance().registerComponent(this);
