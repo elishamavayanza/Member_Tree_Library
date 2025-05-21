@@ -5,8 +5,7 @@ import com.arbre.model.Member;
 import com.arbre.view.MemberView;
 
 import javax.swing.*;
-import java.security.SecureRandom;
-import java.util.Random;
+import java.awt.*;
 
 public class Main {
 
@@ -19,8 +18,8 @@ public class Main {
             // Créer un membre racine (par exemple un administrateur principal)
             Member rootMember = new Member("ROOT");
 
-            // Définir le membre racine dans le contrôleur (s'il faut l'afficher dans la vue)
-            controller.createMember(rootMember.getName(), null);  // L'ajouter au contrôleur
+            // Définir le membre racine dans le contrôleur
+            controller.createMember(rootMember.getName(), null);
             controller.createMember("A", rootMember);
             controller.createMember("B", rootMember);
             controller.createMember("C", rootMember);
@@ -30,27 +29,28 @@ public class Main {
             controller.createMember("G", rootMember);
             controller.createMember("H", rootMember);
 
-
-            for (int i = 0; i <8; i++) {
-                Member member = rootMember.getChildren().get(i);
-
-                int count  = Double.valueOf(Math.round(Math.random() * 10)).intValue();
-
+            // Ajouter des enfants aléatoires
+            for (Member member : rootMember.getChildren()) {
+                int count = (int) Math.round(Math.random() * 10);
                 for (int j = 0; j < count; j++) {
-                    controller.createMember(member+"TRUC OK MACHINE"+j, member);
+                    controller.createMember(member.getName() + "-TRUC-" + j, member);
                 }
             }
 
+            // Création de la fenêtre principale
+            JFrame frame = new JFrame("Arbre de Membres");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(1000, 700);
+            frame.setLayout(new BorderLayout());
 
+            // On y met notre panel réutilisable
+            MemberView panel = new MemberView(controller);
+            // On peut redéfinir la racine si besoin
+            panel.getTreeView().setRootMember(rootMember);
 
-            // Créer la vue avec le contrôleur
-            MemberView view = new MemberView(controller);
-
-            // Définir la vue avec le membre racine
-            view.getTreeView().setRootMember(rootMember);
-
-            // Afficher la fenêtre de l'application
-            view.setVisible(true);
+            frame.add(panel, BorderLayout.CENTER);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
         });
     }
 }
