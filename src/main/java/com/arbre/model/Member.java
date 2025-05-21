@@ -8,6 +8,8 @@ import java.util.UUID;
 public class Member implements IMember {
     private String id;
     private String name;
+    private String position; // ← Ajouté
+
     private final List<Member> children;
 
     /** Génère un nouveau Member avec un UUID aléatoire */
@@ -19,6 +21,8 @@ public class Member implements IMember {
     public Member(String id, String name) {
         this.id = id;
         this.name = name;
+        this.position = "CENTER"; // ← Valeur par défaut
+
         this.children = new ArrayList<>();
     }
 
@@ -40,6 +44,16 @@ public class Member implements IMember {
     @Override
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String getPosition() {
+        return position;
+    }
+
+    @Override
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     @Override

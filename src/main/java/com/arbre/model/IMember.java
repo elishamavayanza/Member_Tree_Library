@@ -12,6 +12,10 @@ public interface IMember {
     String getName();
     void setName(String name);
 
+    /** Position */
+    String getPosition();
+    void setPosition(String position);
+
     /** Enfants directs dans la hiérarchie */
     List<? extends IMember> getChildren();
 
