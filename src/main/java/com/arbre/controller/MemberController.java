@@ -12,7 +12,7 @@ public class MemberController {
     private final Map<String, List<Member>> memberMap; // Mappe l'ID d'un membre à ses enfants
 
     // La racine de l'arbre (membre initial)
-    private final Member initialRoot;
+    private final Member initialRoot ;
 
     public MemberController() {
         members = new ArrayList<>();

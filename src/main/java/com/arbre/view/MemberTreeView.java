@@ -37,7 +37,7 @@ public class MemberTreeView extends JPanel {
             FontMetrics fm = getFontMetrics(font);
             return Math.max(fm.stringWidth(text), minWidth);
         };
-        this.calculator = new TreeLayoutCalculator(measurer, 40, 100, 80, 30,10, 0);
+        this.calculator = new TreeLayoutCalculator(measurer, 40, 100, 80, 30, 10, 0);
 
         setBackground(darkMode ? new Color(10, 10, 25) : Color.WHITE);
         ToolTipManager.sharedInstance().registerComponent(this);
@@ -45,10 +45,16 @@ public class MemberTreeView extends JPanel {
         MouseAdapter mouseHandler = new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                hoveredMember = findMemberAt(e.getPoint()); repaint(); }
+                hoveredMember = findMemberAt(e.getPoint());
+                repaint();
+            }
+
             @Override
             public void mouseExited(MouseEvent e) {
-                hoveredMember = null; repaint(); }
+                hoveredMember = null;
+                repaint();
+            }
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 Member m = findMemberAt(e.getPoint());
@@ -58,7 +64,8 @@ public class MemberTreeView extends JPanel {
                             m.getChildren().addAll(controller.getSubMembers(m));
                         navigateTo(m);
                     } else {
-                        selectedMember = m; repaint();
+                        selectedMember = m;
+                        repaint();
                     }
                 }
             }
@@ -85,26 +92,46 @@ public class MemberTreeView extends JPanel {
     }
 
     private void navigateTo(Member m) {
-        backStack.push(rootMember); forwardStack.clear(); rootMember = m; selectedMember = null; repaint();
+        backStack.push(rootMember);
+        forwardStack.clear();
+        rootMember = m;
+        selectedMember = null;
+        repaint();
     }
 
     public void goBack() {
         if (!backStack.isEmpty()) {
             forwardStack.push(rootMember);
-            rootMember = backStack.pop(); repaint();
+            rootMember = backStack.pop();
+            repaint();
         }
     }
 
     public void goForward() {
         if (!forwardStack.isEmpty()) {
             backStack.push(rootMember);
-            rootMember = forwardStack.pop(); repaint();
+            rootMember = forwardStack.pop();
+            repaint();
         }
     }
 
-    public void setLayoutDirection(LayoutDirection dir) { this.layoutDirection = dir; repaint(); }
-    public void setRootMember(Member root) { this.rootMember = root; backStack.clear(); forwardStack.clear(); repaint(); }
-    public void setDarkMode(boolean dark) { this.darkMode = dark; setBackground(dark ? new Color(10,10,25):Color.WHITE); repaint(); }
+    public void setLayoutDirection(LayoutDirection dir) {
+        this.layoutDirection = dir;
+        repaint();
+    }
+
+    public void setRootMember(Member root) {
+        this.rootMember = root;
+        backStack.clear();
+        forwardStack.clear();
+        repaint();
+    }
+
+    public void setDarkMode(boolean dark) {
+        this.darkMode = dark;
+        setBackground(dark ? new Color(10, 10, 25) : Color.WHITE);
+        repaint();
+    }
 
     @Override
     public String getToolTipText(MouseEvent e) {
@@ -133,7 +160,8 @@ public class MemberTreeView extends JPanel {
                     pts.get(3).x, pts.get(3).y
             );
             g2.setColor(darkMode ? Color.WHITE : Color.DARK_GRAY);
-            g2.setStroke(new BasicStroke(1.5f)); g2.draw(curve);
+            g2.setStroke(new BasicStroke(1.5f));
+            g2.draw(curve);
         }
         // draw nodes
         for (NodeBounds nb : layout.getNodes()) {
@@ -142,15 +170,16 @@ public class MemberTreeView extends JPanel {
             g2.drawRoundRect(nb.x, nb.y, nb.width, nb.height, 15, 15);
             FontMetrics fm = g2.getFontMetrics();
             int textW = fm.stringWidth(nb.name);
-            int tx = nb.x + (nb.width - textW)/2;
-            int ty = nb.y + (nb.height + fm.getAscent())/2 - 2;
+            int tx = nb.x + (nb.width - textW) / 2;
+            int ty = nb.y + (nb.height + fm.getAscent()) / 2 - 2;
             g2.drawString(nb.name, tx, ty);
             if (selectedMember != null && selectedMember.getId().equals(nb.id)) {
-                g2.setColor(Color.YELLOW); g2.setStroke(new BasicStroke(2f));
+                g2.setColor(Color.YELLOW);
+                g2.setStroke(new BasicStroke(2f));
                 g2.drawRoundRect(nb.x, nb.y, nb.width, nb.height, 15, 15);
             }
             if (hoveredMember != null && hoveredMember.getId().equals(nb.id)) {
-                g2.setColor(new Color(255,255,255,100));
+                g2.setColor(new Color(255, 255, 255, 100));
                 g2.fillRoundRect(nb.x, nb.y, nb.width, nb.height, 15, 15);
             }
         }

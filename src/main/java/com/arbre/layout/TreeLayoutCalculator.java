@@ -16,7 +16,7 @@ public class TreeLayoutCalculator {
     private final int nodeHeight;
     private final int padX, padY;
 
-    public TreeLayoutCalculator(TextMeasurer measurer, int horizontalSpacing, int verticalSpacing, int minNodeWidth, int nodeHeight, int padX, int padY) {
+    public TreeLayoutCalculator (TextMeasurer measurer, int horizontalSpacing, int verticalSpacing, int minNodeWidth, int nodeHeight, int padX, int padY) {
         this.measurer = measurer;
         this.horizontalSpacing = horizontalSpacing;
         this.verticalSpacing = verticalSpacing;
