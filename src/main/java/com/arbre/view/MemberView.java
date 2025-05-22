@@ -47,7 +47,11 @@ public class MemberView extends JPanel {
         treeView.setRootMember(initialRoot);
 
         // Scroll pane autour de l'arbre
+        // Scroll pane autour de l'arbre
         scrollPane = new JScrollPane(treeView);
+// Toujours afficher les scrollbars
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         this.add(scrollPane, BorderLayout.CENTER);
 
         // Chargement des icônes
@@ -101,16 +105,22 @@ public class MemberView extends JPanel {
         am.put("goBack", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
                 treeView.goBack();
-                treeView.repaint();
+                // IMPORTANT : revalider et repaint tout le pane
+                treeView.revalidate();
+                scrollPane.revalidate();
+                scrollPane.repaint();
             }
         });
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.SHIFT_DOWN_MASK), "goForward");
         am.put("goForward", new AbstractAction() {
             @Override public void actionPerformed(ActionEvent e) {
                 treeView.goForward();
-                treeView.repaint();
+                treeView.revalidate();
+                scrollPane.revalidate();
+                scrollPane.repaint();
             }
         });
+
 
         // Initialisation
         SwingUtilities.invokeLater(() -> treeView.requestFocusInWindow());
