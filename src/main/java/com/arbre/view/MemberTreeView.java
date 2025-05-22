@@ -96,7 +96,33 @@ public class MemberTreeView extends JPanel {
         forwardStack.clear();
         rootMember = m;
         selectedMember = null;
+        revalidate();
         repaint();
+
+        // On décale le viewport pour mettre m au centre
+        SwingUtilities.invokeLater(() -> {
+            TreeLayout layout = calculator.computeLayout(rootMember, getWidth(), getHeight(), layoutDirection);
+            for (TreeLayoutCalculator.NodeBounds nb : layout.getNodes()) {
+                if (nb.id.equals(m.getId())) {
+                    Rectangle nodeRect = new Rectangle(nb.x, nb.y, nb.width, nb.height);
+
+                    // On demande à ce que ce rectangle soit centré dans la vue
+                    JViewport vp = (JViewport) getParent();
+                    Dimension viewSize = vp.getViewSize();
+                    Dimension extent = vp.getExtentSize();
+
+                    int centerX = nodeRect.x + nodeRect.width/2 - extent.width/2;
+                    int centerY = nodeRect.y + nodeRect.height/2 - extent.height/2;
+
+                    // On borne bien la position pour ne pas sortir du contenu
+                    centerX = Math.max(0, Math.min(centerX, viewSize.width  - extent.width));
+                    centerY = Math.max(0, Math.min(centerY, viewSize.height - extent.height));
+
+                    vp.setViewPosition(new Point(centerX, centerY));
+                    break;
+                }
+            }
+        });
     }
 
     public void goBack() {
